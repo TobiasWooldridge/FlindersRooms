@@ -1,0 +1,13 @@
+{
+    "name": "TobiasWooldridge/FlindersRooms",
+    "require": {
+        "fabpot/Goutte": "dev-master"
+    },
+    "authors": [
+        {
+            "name": "Tobias Wooldridge",
+            "email": "tobias@wooldridge.id.au"
+        }
+    ],
+    "minimum-stability": "dev"
+}
