@@ -7,9 +7,16 @@ use Goutte\Client;
 use Symfony\Component\DomCrawler\Crawler;
 
 
-function format_date(\DateTime $date) {
+class Room {
+	public $id;
+	public $name;
+	public $bookings = array();
+}
+
+function format_stusys_date(\DateTime $date) {
 	return strtoupper($date->format('d-M-Y'));
 }
+
 
 $date_format = '';
 $base_url = 'http://stusyswww.flinders.edu.au/roombook.taf';
@@ -17,7 +24,7 @@ $base_url = 'http://stusyswww.flinders.edu.au/roombook.taf';
 $parameters = array(
 	'_function' => 'all',
 	'bldg' => 'IST',
-	'weekday' => format_date(new DateTime())
+	'weekday' => format_stusys_date(new DateTime())
 );
 
 
@@ -32,6 +39,7 @@ $crawler = $client->request('GET', $request_url);
 $rows = $crawler->filter('tr');
 
 $headerRow = $rows->eq(0);
+$rows = $rows->eq(0)->siblings();
 
 // var_dump(get_class_methods($headerRow));
 
@@ -44,25 +52,38 @@ foreach ($columns as $column) {
 }
 array_shift($times);
 
-
 // 1-indexed to skip header row
-$bookings = array();
-for ($i = 1; $i < count($rows); $i++ ){
-
+$rooms = array();
+foreach ($rows as $i => $row) {
 	$columns = $rows->eq($i)->children();
 
-	$roomId = trim($columns->eq(0)->text());
+	$room = new Room();
 
-	$bookings[$roomId] = array();
-	foreach ($columns as $column) {
-		$bookings[$roomId][] = trim($column->textContent);
-	}
+	$room->id = trim($columns->eq(0)->text());
+	$room->name = trim($columns->eq(1)->text());
+	foreach ($columns as $i => $column) {
+		// Skip the first three columns
+		if ($i < 3) {
+			continue;
+		}
 
-	for ($j = 0; $j < 3; $j++) {
-		array_shift($bookings[$roomId]);
+    	$room->bookings[$i - 3] = trim($column->textContent, " \t\n\r\0\x0B\xC2\xA0");
 	}
+	
+	$rooms[] = $room;
 }
 
-var_dump($times);
+// var_dump($times);
+// var_dump($rooms);
 
-var_dump($bookings);
+var_dump($rooms);
+
+foreach ($times as $i => $time) {
+	echo "Rooms free at at $time\n";
+	foreach($rooms as $room) {
+
+		if ($room->bookings[$i] == "") {
+			echo $room->id  . "\t" . $room->name . "\t"  . $room->bookings[$i] . "\n";
+		}
+	}
+}
