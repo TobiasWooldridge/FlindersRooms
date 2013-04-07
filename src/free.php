@@ -76,8 +76,6 @@ foreach ($rows as $i => $row) {
 // var_dump($times);
 // var_dump($rooms);
 
-var_dump($rooms);
-
 foreach ($times as $i => $time) {
 	echo "Rooms free at at $time\n";
 	foreach($rooms as $room) {
